@@ -147,6 +147,18 @@ src_paths = ["workflow", "tests"]
         directory     = "tests/coverage/html"
         show_contexts = true
 
+[tool.mypy]
+allow_redefinition = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+show_error_codes = true
+strict_optional = false
+warn_no_return = false
+python_version = "3.11"
+
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md
 # include = ["pyriksprot_tagger", "tests"]
