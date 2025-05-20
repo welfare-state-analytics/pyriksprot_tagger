@@ -129,7 +129,7 @@ def test_register_sparv_processor_variant():
 @fixture(scope="session")
 def tagger() -> None | taggers.StanzaTagger:
     _tagger: ITagger = taggers.tagger_factory().create()
-    return _tagger # type: ignore
+    return _tagger  # type: ignore
 
 
 def test_stanza_annotator_to_document(tagger: taggers.StanzaTagger):

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import os
+import warnings
 from os.path import isdir
 from typing import Any, Callable, List, Literal, Union
-import warnings
 
 import stanza
 import stanza.pipeline.processor as spp
@@ -155,7 +155,7 @@ class StanzaTagger(ITagger):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', FutureWarning)
             self.nlp: stanza.Pipeline = stanza.Pipeline(**opts)
-            
+
         self.word_or_token: Literal['words'] | Literal['tokens'] = word_or_token
         self.ssplit: bool = not tokenize_no_ssplit
 
