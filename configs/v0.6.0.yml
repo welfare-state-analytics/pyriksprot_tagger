@@ -1,5 +1,0 @@
-root_folder: /data/riksdagen_corpus_data
-target_folder: /data/riksdagen_corpus_data/tagged_frames_v0.6.0
-repository_folder: /data/riksdagen_corpus_data/riksdagen-corpus
-repository_branch: v0.6.0
-source_folder: /data/riksdagen_corpus_data/riksdagen-corpus/corpus/protocols
