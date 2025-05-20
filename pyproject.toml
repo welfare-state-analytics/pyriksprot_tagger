@@ -41,7 +41,7 @@ torch = {extras = ["cuda"], version = "^2.0.1" }
 # name = "torch"
 # url = "https://download.pytorch.org/whl/cu117"
 # secondary = true
-pyriksprot = "^2024.6.1"
+pyriksprot = {path = "../pyriksprot", develop = true}
 
 [tool.poetry.dev-dependencies]
 black = "==20.*,>=20.8.0.b1"
@@ -71,11 +71,24 @@ portal1_torch = """
 [tool.poetry.scripts]
 tag_info = "pyriksprot_tagger.scripts.tag_info:main"
 pos_tag = "pyriksprot_tagger.scripts.tag:main"
+tag_test_data = "pyriksprot_tagger.tests.scripts.tag_test_data:main"
+
+# riksprot2any = "pyriksprot.scripts.riksprot2any:main"
+# riksprot2tfs = "pyriksprot.scripts.riksprot2tfs:main"
+# riksprot2vrt = "pyriksprot.scripts.riksprot2vrt:export_yearly_folders"
+# riksprot2text = "pyriksprot.scripts.riksprot2text:main"
+# riksprot2speech = "pyriksprot.scripts.riksprot2speech:main"
+# riksprot2speech_text = "pyriksprot.scripts.riksprot2speech_text:main"
+# subset-corpus = "pyriksprot.scripts.subset_corpus:main"
+# subset-vrt-corpus = "pyriksprot.scripts.subset_vrt_corpus:main"
+# speech-index = "pyriksprot.scripts.speech_index:main"
+# metadata2db = "pyriksprot.scripts.metadata2db:main"
+# make-test-data = "pyriksprot.tests.scripts.make_test_data:main"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = ["-rfE", "-q"]
-log_cli = "False"
+addopts = ["-rfE", "-q", "-s"]
+log_cli = false
 testpaths = ["tests"]
 python_files = "*_test.py"
 python_functions = "test_*"
@@ -178,31 +191,23 @@ exclude = [
     "**/deprecated"
 ]
 
-reportMissingImports = true
 reportMissingTypeStubs = false
 reportUntypedFunctionDecorator = false
 reportUntypedClassDecorator = true
 reportOptionalSubscript = false
 reportOptionalMemberAccess = false
 reportOptionalCall = false
+reportOptionalIterable = false
+reportAssignmentType = false
+reportArgumentType = false
+reportMissingImports = true
+reportUnusedVariable = true
+reportUnusedImport = true
+reportUndefinedVariable = true
+reportUnboundVariable = true
 pythonVersion = "3.11"
-
-[tool.dephell.main]
-from = { format = "poetry", path = "pyproject.toml" }
-to = { format = "poetry", path = "pyproject.toml" }
-
-[tool.mypy]
-allow_redefinition = true
-check_untyped_defs = true
-disallow_incomplete_defs = true
-disallow_untyped_decorators = true
-disallow_untyped_defs = true
-ignore_missing_imports = true
-show_error_codes = true
-strict_optional = false
-warn_no_return = false
-python_version = 3.8
 
 [build-system]
 requires = ["setuptools", "poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
