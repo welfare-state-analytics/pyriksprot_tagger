@@ -89,7 +89,7 @@ def download_to_archive(tag: str, protocols: "list[str]", target_filename: str, 
         )
         schema: md.MetadataSchema = md.MetadataSchema(tag)
 
-        md.gh_fetch_metadata_by_config(schema=schema, tag=tag, folder=jj(temp_folder, "metadata"), force=True)
+        md.gh_download_by_config(schema=schema, tag=tag, folder=jj(temp_folder, "metadata"), force=True)
 
         ensure_path(target_filename)
         shutil.make_archive(strip_extensions(target_filename), 'zip', temp_folder)
@@ -169,7 +169,7 @@ def create_test_config(tag: str, data_folder: str) -> dict:
         'tagged_frames': {
             'folder': f'{data_folder}/tagged_frames',
             'file_pattern': 'prot-*.zip',
-            'pattern': f'{data_folder}/tagged_frames/**/prot-*.zip '           
+            'pattern': f'{data_folder}/tagged_frames/**/prot-*.zip ',
         },
         'tagger': {
             'lang': "sv",
