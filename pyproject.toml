@@ -97,7 +97,6 @@ line_length = 120
 include = '\.smk$|^Snakefile$'
 
 [tool.black]
-skip_string_normalization = true
 line-length = 120
 target-version = ["py311"]
 skip-string-normalization = true
