@@ -60,6 +60,9 @@ pyinstrument = "^4.0.3"
 pygit2 = "^1.7.2"
 poethepoet = "^0.13.1"
 
+[tool.poetry.group.dev.dependencies]
+debugpy = "^1.8.5"
+
 [tool.poe.tasks]
 portal1_torch = """
     pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
