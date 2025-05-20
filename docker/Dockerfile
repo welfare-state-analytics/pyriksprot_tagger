@@ -1,6 +1,6 @@
 FROM nvidia/cuda:11.6.2-base-ubuntu20.04
 
-LABEL MAINTAINER Roger Mähler <roger dot mahler at umu dot se>
+LABEL MAINTAINER=Roger Mähler <roger dot mahler at umu dot se>
 
 ENV SHELL=/bin/bash
 ENV DEBIAN_FRONTEND=noninteractive
@@ -37,8 +37,8 @@ ENV HOME=/home/$APP_USER
 WORKDIR ${HOME}
 
 ARG PYTHON_VERSION="3.11"
-ENV PYENV_ROOT ${HOME}/.pyenv
-ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
+ENV PYENV_ROOT=${HOME}/.pyenv
+ENV PATH=${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:$PATH
 
 RUN curl https://pyenv.run | bash
 RUN pyenv update \
