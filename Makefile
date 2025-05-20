@@ -49,14 +49,3 @@ vrt-test-data:
 # cwb:
 # 	cwb-encode -d tests/output/cwb
 
-# .PHONY: image
-# image:
-# 	@docker build \
-# 		-t pyriksprot:latest -t pyriksprot:$(VERSION) \
-# 		--build-arg PACKAGE_VERSION=$(PACKAGE_VERSION) .
-
-# .PHONY: bash
-# bash:
-# 	@docker run --gpus all -it --rm \
-# 		--mount "type=bind,src=$(shell pwd),dst=/home/pyriksprot/work" \
-# 		--mount "type=bind,src=/data,dst=/data" pyriksprot:latest /bin/bash
