@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+import uuid
 from os import makedirs, symlink
 from os.path import isfile
 from os.path import join as jj
@@ -16,6 +17,7 @@ from pyriksprot import strip_extensions
 from pyriksprot.configuration import Config
 from pyriksprot.corpus.utility import ls_corpus_folder
 from pyriksprot_tagger.scripts import tag as tagger_script
+from pyriksprot.utility import generate_config_by_jinja_template
 
 RIKSPROT_SAMPLE_PROTOCOLS = [
     'prot-1936--ak--008.xml',
@@ -133,57 +135,16 @@ def pos_tag_testdata_for_current_version(config_filename: str, force: bool = Tru
         recursive=True,
     )
 
-
-def create_test_config(tag: str, data_folder: str) -> dict:
-    return {
-        'root_folder': data_folder,
-        'data_folder': data_folder,
-        'version': tag,
-        'corpus': {
-            'version': tag,
-            'folder': f'{data_folder}/riksdagen-records/data',
-            'pattern': "**/prot-*-*.xml",
-            'github': {
-                'user': "swerik-project",
-                'repository': "riksdagen-records",
-                'path': "data",
-                'local_folder': f"{data_folder}/riksdagen-records",
-            },
-        },
-        'metadata': {
-            'version': tag,
-            'folder': f'{data_folder}/parlaclarin/metadata',
-            'database': {
-                'type': 'pyriksprot.metadata.database.SqliteDatabase',
-                'options': {
-                    'filename': f'{data_folder}/parlaclarin/metadata/riksprot_metadata.db',
-                },
-            },
-            'github': {
-                'user': 'swerik-project',
-                'repository': 'riksdagen-persons',
-                'path': 'data',
-                'url': ' https://github.com/swerik-project/riksdagen-records.git',
-            },
-        },
-        'tagged_frames': {
-            'folder': f'{data_folder}/tagged_frames',
-            'file_pattern': 'prot-*.zip',
-            'pattern': f'{data_folder}/tagged_frames/**/prot-*.zip ',
-        },
-        'tagger': {
-            'lang': "sv",
-            'processors': "tokenize,lemma,pos",
-            'tokenize_no_ssplit': True,
-            'tokenize_pretokenized': True,
-            'use_gpu': False,
-            'num_threads': 1,
-            'module': 'pyriksprot_tagger.taggers.stanza_tagger',
-            'stanza_datadir': f'{data_folder}/sparv/models/stanza',
-            'preprocessors': "dedent,dehyphen,strip,pretokenize",
-        },
-        'dehyphen': {
-            'folder': f'{data_folder}/dehyphen',
-            'tf_filename': f'{data_folder}/dehyphen/word-frequencies.pkl',
-        },
-    }
+def generate_test_config(corpus_version: str, metadata_version: str) -> str:
+    """Generate a test config file"""
+    config_filename: str = f"tests/output/config_{str(uuid.uuid4())[:8]}.yml"
+    data_folder: str = "tests/test_data/source"
+    generate_config_by_jinja_template(
+        template_folder="./tests",
+        template_filename="config_template.yml.j2",
+        target_filename=config_filename,
+        corpus_version=corpus_version,
+        metadata_version=metadata_version,
+        data_folder=data_folder,
+    )
+    return config_filename
