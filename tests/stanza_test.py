@@ -78,8 +78,12 @@ def dehyphen(text: str) -> str:
 
 # @pytest.mark.skip(reason="Infrastructure test (function called from Makefile)")
 def test_setup_version_test_data():
+    config_filename: str = "tests/output/config.yml"
+    pyriksprot.utility.generate_default_config(
+        target_filename=config_filename
+    )
     pos_tag_testdata_for_current_version(
-        config_filename="tests/config.yml",
+        config_filename="tests/output/config.yml",
         force=True,
     )
 
