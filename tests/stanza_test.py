@@ -1,6 +1,7 @@
 import os
 from unittest.mock import MagicMock, patch
 
+import pyriksprot
 import pytest
 from pyriksprot import ITagger, interface
 from pyriksprot.corpus.parlaclarin import parse
@@ -22,8 +23,6 @@ os.makedirs(jj("tests", "output"), exist_ok=True)
 
 if not os.path.isdir(MODEL_ROOT):
     pytest.skip(f"Skipping Stanza tests since model path {MODEL_ROOT} doesn't exist.", allow_module_level=True)
-
-VERSION: str = os.getenv("VERSION")
 
 
 FAKE_DOCUMENTS = [

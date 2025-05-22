@@ -11,7 +11,8 @@ def pytest_sessionstart(session):  # pylint: disable=unused-argument
     ConfigStore.configure_context(source="./tests/config.yml", context="default", env_prefix="RIKSPROT")
 
     setup_working_folder(
-        tag=ConfigValue("corpus.version").value,
+        corpus_version=ConfigValue("corpus.version").value,
+        metadata_version=ConfigValue("metadata.version").value,
         folder=RIKSPROT_SAMPLE_DATA_FOLDER,
         protocols=RIKSPROT_SAMPLE_PROTOCOLS,
         pattern=ConfigValue("corpus.pattern").value,
