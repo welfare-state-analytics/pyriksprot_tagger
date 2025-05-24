@@ -2,6 +2,7 @@ import os
 from unittest.mock import MagicMock, patch
 
 import pyriksprot
+import pyriksprot.configuration
 import pytest
 from pyriksprot import ITagger, interface
 from pyriksprot.corpus.parlaclarin import parse
@@ -190,9 +191,11 @@ def test_stanza_tagger_with_sentenized_document():
 
 
 def test_stanza_tag_fake_protocol(tagger: taggers.StanzaTagger):
+
+    version: str = pyriksprot.configuration.ConfigValue("corpus.version").value
     expected_output = ['\n'.join(['\t'.join(x[:-1]) for x in r]) for r in EXPECTED_TAGGED_RESULT_FAKE_1958]
 
-    protocol: interface.Protocol = parse.ProtocolMapper.parse(jj("tests", "test_data", "fake", "prot-1958-fake.xml"))
+    protocol: interface.Protocol = parse.ProtocolMapper.parse(jj("tests", "test_data", "fake", version, "prot-1958-fake.xml"))
 
     tag.tag_protocol(tagger, protocol, preprocess=True)
 
