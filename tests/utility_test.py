@@ -1,15 +1,18 @@
 import os
 import shutil
+import tempfile
 import uuid
+from pathlib import Path
 
-from pyriksprot_tagger.utility import expand_basenames, expand_target_files
+import pygit2
+from pyriksprot_tagger.utility import VersionSpecification, gh_get_workdir_ref
 
 TEST_BASENAMES = [
-    'prot-198687--11',
-    'prot-200405--7',
-    'prot-1961--fk--6',
-    'prot-1961--ak--5',
-    'prot-1936--ak--8',
+    'prot-198687--011',
+    'prot-200405--007',
+    'prot-1961--fk--006',
+    'prot-1961--ak--005',
+    'prot-1936--ak--008',
 ]
 
 
@@ -23,36 +26,3 @@ def _setup_test_files(folder: str):
             f.write('')
 
 
-def test_expand_basenames():
-    folder: str = f'tests/output/{str(uuid.uuid4())[:8]}'
-    shutil.rmtree(folder, ignore_errors=True)
-    _setup_test_files(folder)
-    years, filenames = expand_basenames('tests/output/work_folder/riksdagen-records/data', 'xml')
-    assert years == ['198687', '200405', '1961', '1961', '1936']
-    assert filenames == TEST_BASENAMES
-    shutil.rmtree(folder, ignore_errors=True)
-
-
-def test_expand_target_files():
-    folder: str = f'tests/output/{str(uuid.uuid4())[:8]}'
-    shutil.rmtree(folder, ignore_errors=True)
-    _setup_test_files(folder)
-
-    source_folder = folder
-    source_extension = 'xml'
-
-    target_folder: str = 'tests/output'
-    target_extension = 'zip'
-
-    target_files: list[str] = expand_target_files(
-        source_folder=source_folder,
-        source_extension=source_extension,
-        target_folder=target_folder,
-        target_extension=target_extension,
-        years=None,
-    )
-
-    assert target_files is not None
-
-    assert target_files == [f'tests/output/{x.split("-")[1]}/{x}.zip' for x in TEST_BASENAMES]
-    shutil.rmtree(folder, ignore_errors=True)
