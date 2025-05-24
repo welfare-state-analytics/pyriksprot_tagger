@@ -6,9 +6,8 @@ import os
 import sys
 from os.path import isdir
 from os.path import join as jj
-from typing import Any, Callable
+from typing import  Callable
 
-import loguru
 from pyriksprot import dedent, pretokenize
 from pyriksprot.gitchen import gh_get_workdir_ref
 
@@ -139,3 +138,13 @@ def remove_csv_item(csv: str, item: str, sep: str = ',') -> str:
 #     sig_params = inspect.signature(func).parameters
 #     opts: dict = {k: args[k] if k in args else s.default for k, s in sig_params.items()}
 #     return opts
+
+
+class VersionSpecification:
+    @staticmethod
+    def is_satisfied(source_folder: str, version: str) -> bool | None:
+        try:
+            ref_type, value = gh_get_workdir_ref(source_folder)
+            return ref_type == 'tag' and value == version
+        except KeyError:
+            return None
