@@ -4,40 +4,42 @@ export PYTHONPATH=.
 
 source .env
 
+g_config_file=
+
 g_corpus_version=
 g_corpus_folder=
 g_metadata_version=
 g_root_folder=
 g_target_folder=
-g_source_pattern="*"
+g_stanza_datadir=/data/sparv/models/stanza
+
 g_force=no
 g_update=1
-g_max_procs=1
+MAX_PROCS=1
 g_now_timestamp=$(date "+%Y%m%d_%H%M%S")
-g_log_dir=./logs
 g_scriptname=$(basename $0)
-g_repository_name=riksdagen-records
-g_repository_folder=
-g_word_frequency_filename=
-g_stanza_datadir=/data/sparv/models/stanza
 
 function usage()
 {
     if [ "$1" != "" ]; then
         echo "error: $1"
     fi
-    echo "usage: ./${scriptname} [--root-folder folder]  [--corpus-folder folder] --target-folder folder --corpus-version version --metadata-version version [--force] [--update] [--max-procs n]]"
+    echo "usage: ./${scriptname} [--config-file config.yml] [--root-folder folder]  [--corpus-folder folder] --target-folder folder --corpus-version version --metadata-version version [--force] [--update] [--max-procs n]]"
     echo "Tags XML files found in corpus folder and its subfolders."
     echo ""
+    echo "   --config-file             use settings in configuration file"
+    echo " or "
     echo "   --root-folder             root data and metadata folder (dehyphen, models, TF etc.)"
     echo "   --corpus-version          source corpus version"
     echo "   --metadata-version        source metadata version"
     echo "   --corpus-folder           source corpus folder"
-    echo "   --source-pattern          source folder pattern"
-    echo "   --target-folder           target folder"
+    echo "   --target-folder           tagged frames target folder"
+    echo " "
+    echo "   --subfolder-pattern       source subfolder pattern"
     echo "   --force                   drop target if exists"
     echo "   --update                  update target if exists"
     echo "   --max-procs               max number of parallel jobs"
+    
     echo ""
 }
 
@@ -46,6 +48,12 @@ while [[ $# -gt 0 ]]
 do
     key="$1"
     case $key in
+        --config-file)
+            g_config_file="$2"; shift; shift
+        ;;
+        --stanza-datadir)
+            g_stanza_datadir="$2"; shift; shift
+        ;;
         --corpus-version)
             g_corpus_version="$2"; shift; shift
         ;;
@@ -58,14 +66,11 @@ do
         --corpus-folder)
             corpus_folder="$2"; shift; shift
         ;;
-        --source-pattern)
-            g_source_pattern="$2"; shift; shift
-        ;;
         --target-folder)
             g_target_folder="$2"; shift; shift
         ;;
         --max-procs)
-            g_max_procs="$2"; shift; shift
+            MAX_PROCS="$2"; shift; shift
         ;;
         --force)
             g_force=yes ;
@@ -90,175 +95,158 @@ done
 
 set -- "${POSITIONAL[@]}"
 
-if [ "$g_root_folder" == "" ]; then
-    usage "root folder not specified"
-    exit 64
-fi
-
-if [ ! -d "$g_root_folder" ]; then
-    usage "data folder doesn't exist"
-    exit 64
-fi
-
-if [ "$g_corpus_folder" == "" ]; then
-    usage "source corpus folder not specified"
-    exit 64
-fi
-
-if [ "$g_corpus_version" == "" ]; then
-    usage "corpus version not specified"
-    exit 64
-fi
-
-if [ "$g_metadata_version" == "" ]; then
-    usage "metadata version not specified"
-    exit 64
-fi
-
-if [ ! -d "$g_corpus_folder" ]; then
-    usage  "corpus folder doesn't exist"
-    exit 64
-fi
-
-if [ "$g_target_folder" == "" ]; then
-    usage "target folder not specified" ;
-    exit 64
-fi
-
-if [ -d "$g_target_folder" ]; then
-    if [ "$g_force" == "yes" ]; then
-        echo "info: running in force mode, dropping existing target" ;
-        echo rm -rf $g_target_folder ;
-    elif [ $g_update == 0 ]; then
-        echo "error: target folder exists (use --force or --update to remove/update existing tagging)" ;
-        exit 64 ;
-    fi
-fi
-
-if [[ $g_max_procs < 1 || $g_max_procs > 6 ]]; then
-    echo "error: max procs must be an integer between 1 and 6" ;
-    exit 64
-fi
-
-g_word_frequency_filename=${g_root_folder}/${g_corpus_version}/dehyphen/word-frequencies.pkl
-
-mkdir -p ${g_target_folder} ${g_log_dir}
-
-pushd "$g_corpus_folder" > /dev/null || exit 1
-g_repository_folder=$(git rev-parse --show-toplevel 2> /dev/null || echo "")
-popd > /dev/null
-
-if ! expr "${g_corpus_folder}" : ".*${g_repository_name}$" > /dev/null; then
-    echo "info: repository folder is ${g_repository_folder}, skipping tags check..." ;
-    g_repository_folder="" ;
-else
-    echo "info: repository folder is ${g_repository_folder}, checking that tags match..." ;
-fi
-
-function ensure_corpus_version_is_same_as_workdir()
+function check_and_persist_config()
 {
-    if [ "$g_repository_folder" != "" ]; then
-
-        workdir_tag=undefined
-        if command -v "$tag_info" > /dev/null; then
-            workdir_tag=$(tag_info --key tag ${corpus_folder})
-        elif [ -f "pyriksprot_tagger/scripts/tag_info.py" ]; then
-            export PYTHONPATH=.
-            workdir_tag=$(poetry run python pyriksprot_tagger/scripts/tag_info.py --key tag ${g_repository_folder})
-        else
-
-            tag_info_filename=$(python - "$input" <<'END_SCRIPT'
-import pyriksprot_tagger, os
-print(os.path.join(os.path.dirname(pyriksprot_tagger.__file__), "scripts/tag_info.py"))
-END_SCRIPT
-)
-
-            if [ -f "$tag_info_filename" ]; then
-                workdir_tag=$(poetry run python ${tag_info_filename} --key tag ${g_repository_folder})
-            else
-                echo "error: tag_info not found - unable to verify that workdir tag is ${corpus_version}"
-                exit 64 ;
-            fi
+    if [ "$g_config_file" != "" ]; then
+        if [ ! -f "$g_config_file" ]; then
+            usage "configuration file not found: $g_config_file"
+            exit 64
         fi
-
-        if [ "$corpus_version" != "$workdir_tag" ]; then
-            echo "error: workdir tag is $workdir_tag, expected ${corpus_version}" ;
+        if [ "${g_root_folder}${g_corpus_folder}${g_target_folder}${g_corpus_version}${g_metadata_version}" != "" ]; then
+            echo "error: config file and command line options are mutually exclusive" ;
             exit 64 ;
         fi
+    else
+        if [ "$g_root_folder" == "" ] || [ ! -d "$g_root_folder" ]; then
+            usage "root folder not specified or doesn't exist"
+            exit 64
+        fi
 
-        tag_info $g_repository_folder > ${target_folder}/version.yml
+        if [ "$g_corpus_folder" == "" ] ||  [ ! -d "$g_corpus_folder" ]; then
+            usage "source corpus folder not specified or doesn't exist"
+            exit 64
+        fi
 
+        if [ "$g_corpus_version" == "" ] || [ "$g_metadata_version" == "" ]; then
+            usage "corpus and/or metadata version not specified"
+            exit 64
+        fi
+        if [ "$g_target_folder" == "" ]; then
+            usage "target folder not specified" ;
+            exit 64
+        fi
+
+        g_config_file=config_${g_corpus_version}_${g_metadata_version}_${g_now_timestamp}.yml
+
+        make-config $g_config_file \
+            --corpus-version $g_corpus_version \
+            --metadata-version $g_metadata_version \
+            --root-folder ${g_root_folder:-$1} \
+            --corpus-folder $g_corpus_folder \
+            --stanza-datadir $g_stanza_datadir
+    fi
+
+    if [[ $MAX_PROCS < 1 || $MAX_PROCS > 6 ]]; then
+        echo "error: max procs must be an integer between 1 and 6" ;
+        exit 64
+    fi
+
+}
+
+function update_word_frequency()
+{
+    local config_file=$1
+    local tf_filename=$(yq -r '.dehyphen.tf_filename' "$config_file")
+
+    if [ -f "${tf_filename}" ]; then
+        if [ "$g_force" == "yes" ]; then
+            echo "info: force mode, dropping existing word frequency file: ${tf_filename}"
+            rm -f ${tf_filename}
+        else
+            echo "info: word frequency file exists: ${tf_filename}"
+        fi
+    fi
+
+    if [ ! -f "${tf_filename}" ]; then
+        echo "info: generating word frequency file ${tf_filename}..."
+        riksprot2tfs "${config_file}"  "${tf_filename}"
     fi
 }
 
-ensure_corpus_version_is_same_as_workdir
 
-echo $corpus_version > ${target_folder}/version
+function reset_target_folder()
+{
+    local config_file=$1
+    local target_folder=$(yq -r '.tagged_frames.folder' "$config_file")
+    local corpus_version=$(yq -r '.corpus.version' "$config_file")
+    local metadata_version=$(yq -r '.metadata.version' "$config_file")
 
-sub_folders=`find ${g_corpus_folder} -maxdepth 1 -mindepth 1 -name "${g_source_pattern}" -type d -printf '%f\n' | sort`
-
-yaml_file=$g_log_dir/tag_config_${now_timestamp}.yml
-
-echo "info: corpus version: $g_corpus_version"
-echo "info: metadata version: $g_metadata_version"
-echo "info: force: $g_force"
-echo "info: root folder: $g_root_folder"
-echo "info: corpus folder: $g_corpus_folder"
-echo "info: target folder: $g_target_folder"
-echo "info: word frequency filename: $g_word_frequency_filename"
-
-poetry run jinja2 configs/template.yml.j2 \
-    -D root_folder=$g_root_folder \
-    -D corpus_version=$g_corpus_version \
-    -D corpus_folder=$g_corpus_folder \
-    -D metadata_version=$g_metadata_version \
-    -D stanza_datadir=$g_stanza_datadir > $yaml_file
-
-echo "info: using configuration file $yaml_file"
-cp $yaml_file ${target_folder}/tag_config.yml
-
-echo "info: using $g_max_procs processes"
-if [ -f "${g_word_frequency_filename}" ]; then
-    if [ "$g_force" == "yes" ]; then
-        echo "info: force mode, dropping existing word frequency file: ${g_word_frequency_filename}"
-        rm -f ${g_word_frequency_filename}
-    else
-        echo "info: word frequency file exists: ${g_word_frequency_filename}"
+    if [ -d "$target_folder" ]; then
+        echo "info: removing existing target folder $target_folder"
+        rm -rf $target_folder
+    fi
+    if [ -d "$target_folder" ]; then
+        if [ "$g_force" == "yes" ]; then
+            echo "info: running in force mode, dropping existing target" ;
+            echo rm -rf $target_folder ;
+        elif [ $g_update == 0 ]; then
+            echo "error: target folder exists (use --force or --update to remove/update existing tagging)" ;
+            exit 64 ;
+        fi
     fi
 
-fi
+    local log_dir="logs/${corpus_version}"
 
-if [ ! -f "${g_word_frequency_filename}" ]; then
-    echo "info: generating word frequency file ${g_word_frequency_filename}..."
-    riksprot2tfs $yaml_file
-fi
+    mkdir -p ${target_folder} ${log_dir}
+    echo $(yq -r '.corpus.version' "$config_file") > ${target_folder}/version
+    echo $(yq -r '.metadata.version' "$config_file") > ${target_folder}/metadata_version
 
-# if [ ! command -v "pos_tag" > /dev/null ]; then
-#     echo "error: pos_tag command not found - unable to run tagging"
-#     echo " info: install the `pyriksprot_tagger` package and make sure that the pos_tag command is available"
-#     exit 64 ;
-# fi
+    cp -f $config_file ${target_folder}/config_${corpus_version}_${metadata_version}.yml
+    cp -f $config_file $log_dir/tag_config_${g_now_timestamp}.yml
+}
 
-if [[ $max_procs > 1 ]]; then
+function show_settings()
+{
+    local config_file=$1
 
-    tag_command_file="$log_dir/tag_commands_${now_timestamp}.txt"
+    echo "info: configuration file:" $config_file
+    echo ""
+    echo "info: corpus version:"      $(yq -r '.corpus.version' "$config_file")
+    echo "info: metadata version:"    $(yq -r '.metadata.version' "$config_file")
+    echo "info: root folder:"         $(yq -r '.root_folder' "$config_file")
+    echo "info: corpus folder:"       $(yq -r '.corpus.folder' "$config_file")
+    echo "info: target folder:"       $(yq -r '.tagged_frames.folder' "$config_file")
+    echo "info: word frequency file:" $(yq -r '.dehyphen.tf_filename' "$config_file")
+    echo ""
+    echo "info: force: $g_force"
+    echo "info: using $MAX_PROCS processes"
+}
 
-    echo "command file: $tag_command_file"
+function tagit()
+{
+    local config_file=$1
+    local corpus_folder=$(yq -r '.corpus.folder' "$config_file")
+    local corpus_version=$(yq -r '.corpus.version' "$config_file")
+    local log_dir="logs/${corpus_version}"
+    local sub_folders=`find ${corpus_folder} -maxdepth 1 -mindepth 1 -name "*" -type d -printf '%f\n' | sort`
+    local target_folder=$(yq -r '.tagged_frames.folder' "$config_file")
 
-    rm -rf $tag_command_file
+    if [[ $MAX_PROCS > 1 ]]; then
 
-    for sub_folder in $sub_folders; do
-        echo "poetry run python ./pyriksprot_tagger/scripts/tag.py $yaml_file ${corpus_folder}/$sub_folder ${target_folder}/$sub_folder" >> ${tag_command_file}
-        # echo "pos_tag  $yaml_file ${corpus_folder}/$sub_folder ${target_folder}/$sub_folder" >> ${tag_command_file}
-    done
+        tag_command_file="$log_dir/tag_commands_${g_now_timestamp}.txt"
 
-    echo "info: running in parallel mode using $max_procs processes"
-    cat $tag_command_file | xargs -I CMD --max-procs=$max_procs bash -c CMD
+        echo "command file: $tag_command_file"
+        rm -f $tag_command_file
 
-else
-    echo "info: running in sequential mode"
-    for sub_folder in $sub_folders; do
-        PYTHONPATH=. python ./pyriksprot_tagger/scripts/tag.py $yaml_file ${corpus_folder}/$sub_folder ${target_folder}/$sub_folder
-        # PYTHONPATH=. pos_tag $yaml_file ${corpus_folder}/$sub_folder ${target_folder}/$sub_folder 
-    done
-fi
+        for sub_folder in $sub_folders; do
+            echo "poetry run python ./pyriksprot_tagger/scripts/tag.py --skip-version-check $config_file ${corpus_folder}/$sub_folder ${target_folder}/$sub_folder" >> ${tag_command_file}
+            # echo "pos_tag  $config_file ${corpus_folder}/$sub_folder ${target_folder}/$sub_folder" >> ${tag_command_file}
+        done
+        echo "info: running in parallel mode using $MAX_PROCS processes"
+        cat $tag_command_file | xargs -I CMD --max-procs=$MAX_PROCS bash -c CMD
+
+    else
+        echo "info: running in sequential mode"
+        for sub_folder in $sub_folders; do
+            PYTHONPATH=. python ./pyriksprot_tagger/scripts/tag.py --skip-version-check $config_file ${corpus_folder}/$sub_folder ${target_folder}/$sub_folder
+            # PYTHONPATH=. pos_tag $config_file ${corpus_folder}/$sub_folder ${target_folder}/$sub_folder 
+        done
+    fi
+}
+
+check_and_persist_config
+show_settings $g_config_file
+reset_target_folder $g_config_file
+update_word_frequency $g_config_file
+tagit $g_config_file
+
