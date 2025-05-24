@@ -1,10 +1,6 @@
 include .env
 
 
-ifndef CONFIG_FILENAME
-$(error CONFIG_FILENAME is undefined)
-endif
-
 include ./Makefile.dev
 log_file=$(date "+%Y%m%d%H%M%S"`_"deploy_${target_db_name}_${source_type}.log)
 
