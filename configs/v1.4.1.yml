@@ -10,7 +10,8 @@ corpus:
     user: swerik-project
     repository: riksdagen-records
     path: data
-    local_folder: /data/riksdagen_corpus_data/riksdagen-records
+    local_folder: /data/riksdagen_corpus_data/riksdagen-records/
+    url: https://github.com/swerik-project/riksdagen-records.git
 
 metadata:
   version: v1.1.3
@@ -23,10 +24,11 @@ metadata:
     user: swerik-project
     repository: riksdagen-persons
     path: data
+    url: https://github.com/swerik-project/riksdagen-persons.git
 
 tagged_frames:
-  folder: /data/riksdagen_corpus_data/v1.4.1/tagged_frames
-  file_pattern: prot-*.zip
+  folder: /data/riksdagen_corpus_data/v1.4.1/tagged_frames/
+  file_pattern: "prot-*.zip"
   pattern: /data/riksdagen_corpus_data/v1.4.1/tagged_frames/**/prot-*.zip
 
 tagged_speeches:
