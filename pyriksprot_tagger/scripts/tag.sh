@@ -24,7 +24,7 @@ function usage()
     if [ "$1" != "" ]; then
         echo "error: $1"
     fi
-    echo "usage: ./${scriptname} [--config-file config.yml] [--root-folder folder]  [--corpus-folder folder] --target-folder folder --corpus-version version --metadata-version version [--force] [--update] [--max-procs n]]"
+    echo "usage: ./${scriptname} [--config-file filename] [--root-folder folder]  [--corpus-folder folder] --target-folder folder --corpus-version version --metadata-version version [--force] [--update] [--max-procs n]]"
     echo "Tags XML files found in corpus folder and its subfolders."
     echo ""
     echo "   --config-file             use settings in configuration file"
