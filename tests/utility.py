@@ -1,7 +1,6 @@
 import os
 import shutil
 import tempfile
-import uuid
 from os import makedirs, symlink
 from os.path import isfile
 from os.path import join as jj
@@ -90,26 +89,42 @@ def create_sample_xml_repository(
     )
 
 
-def download_sample_data(*, corpus_version: str, metadata_version: str, protocols: "list[str]", target_folder: str, **gh_opts) -> None:
+def download_sample_data(
+    *, corpus_version: str, metadata_version: str, protocols: "list[str]", target_folder: str, **gh_opts
+) -> None:
     source_folder: str = "tests/test_data/source/"
     sample_data_archive: str = jj(source_folder, f"{corpus_version}_data.zip")
     """Create archive instead of downloading each test run"""
     if not isfile(sample_data_archive):
-        download_to_archive(corpus_version=corpus_version, metadata_version=metadata_version, protocols=protocols, target_filename=sample_data_archive, **gh_opts)
+        download_to_archive(
+            corpus_version=corpus_version,
+            metadata_version=metadata_version,
+            protocols=protocols,
+            target_filename=sample_data_archive,
+            **gh_opts,
+        )
 
     """Unzip archive in repository"""
     os.makedirs(target_folder, exist_ok=True)
     shutil.unpack_archive(sample_data_archive, target_folder)
 
 
-def download_to_archive(corpus_version: str, metadata_version: str, protocols: "list[str]", target_filename: str, **gh_opts) -> None:
+def download_to_archive(
+    corpus_version: str, metadata_version: str, protocols: "list[str]", target_filename: str, **gh_opts
+) -> None:
     with tempfile.TemporaryDirectory() as temp_folder:
         pc.download_protocols(
-            filenames=protocols, target_folder=jj(temp_folder, "data"), create_subfolder=True, tag=corpus_version, **gh_opts
+            filenames=protocols,
+            target_folder=jj(temp_folder, "data"),
+            create_subfolder=True,
+            tag=corpus_version,
+            **gh_opts,
         )
         schema: md.MetadataSchema = md.MetadataSchema(version=metadata_version)
 
-        md.gh_download_by_config(schema=schema, version=metadata_version, folder=jj(temp_folder, "metadata"), force=True)
+        md.gh_download_by_config(
+            schema=schema, version=metadata_version, folder=jj(temp_folder, "metadata"), force=True
+        )
 
         ensure_path(target_filename)
         shutil.make_archive(strip_extensions(target_filename), 'zip', temp_folder)
