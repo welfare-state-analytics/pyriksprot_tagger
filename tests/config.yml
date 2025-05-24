@@ -1,48 +1,42 @@
-root_folder: tests/test_data/source/v1.1.0
-data_folder: tests/test_data/source/v1.1.0
-version: v1.1.0
+root_folder: tests/test_data/source
+data_folder: tests/test_data/source
+version: v1.4.1
 
 corpus:
-  version: v1.1.0
-  folder: tests/test_data/source/v1.1.0/parlaclarin/protocols
+  version: v1.4.1
+  folder: tests/test_data/source/v1.4.1/riksdagen-records
   pattern: "**/prot-*-*.xml"
   github:
     user: swerik-project
     repository: riksdagen-records
     path: data
-    local_folder: tests/test_data/source/v1.1.0/parlaclarin/protocols
+    local_folder: tests/test_data/source/v1.4.1/riksdagen-records
+    url: https://github.com/swerik-project/riksdagen-records.git
 
 metadata:
-  version: v1.1.0
-  folder: tests/test_data/source/v1.1.0/parlaclarin/metadata
+  version: v1.1.3
+  folder: tests/test_data/source/metadata/v1.1.3
   database:
     type: pyriksprot.metadata.database.SqliteDatabase
     options:
-      filename: tests/test_data/source/v1.1.0/riksprot_metadata.db
-    # type: pyriksprot.metadata.database.PostgresDatabase
-    # options:
-    #   host: xxx
-    #   database: riksprot_metadata_v1_1_0
-    #   user: humlab_admin
-    #   password: xyz
-    #   port: 5433
+      filename: tests/test_data/source/v1.4.1/riksprot_metadata.v1.1.3.db
   github:
     user: swerik-project
     repository: riksdagen-persons
     path: data
-    url: https://github.com/swerik-project/riksdagen-records.git
+    url: https://github.com/swerik-project/riksdagen-persons.git
 
 tagged_frames:
-  folder: tests/test_data/source/v1.1.0/tagged_frames
-  file_pattern: prot-*.zip
-  pattern: tests/test_data/source/v1.1.0/tagged_frames/**/prot-*.zip
+  folder: tests/test_data/source/v1.4.1/tagged_frames/
+  file_pattern: "prot-*.zip"
+  pattern: tests/test_data/source/v1.4.1/tagged_frames/**/prot-*.zip
 
 tagged_speeches:
-  folder: tests/test_data/source/v1.1.0/tagged_frames_speeches.feather
+  folder: tests/test_data/source/v1.4.1/tagged_frames_speeches.feather
 
 dehyphen:
-  folder: tests/test_data/source/v1.1.0/dehyphen
-  tf_filename: tests/test_data/source/v1.1.0/dehyphen/word-frequencies.pkl
+  folder: tests/test_data/source/v1.4.1/dehyphen
+  tf_filename: tests/test_data/source/v1.4.1/dehyphen/word-frequencies.pkl
 
 tagger:
   module: pyriksprot_tagger.taggers.stanza_tagger
@@ -54,3 +48,9 @@ tagger:
   tokenize_no_ssplit: true
   use_gpu: true
   num_threads: 1
+
+global:
+  corpus:
+    folder: /data/riksdagen_corpus_data/riksdagen-records/data
+  metadata:
+    folder: /data/riksdagen_corpus_data/riksdagen-persons/data
