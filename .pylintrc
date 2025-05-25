@@ -1,5 +1,5 @@
 [MASTER]
-ignore-patterns=deprecated,data,test_data,work_folder,resources,exports
+ignore-patterns=deprecated,data,test_data,work_folder,resources,exports, purgatory
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
