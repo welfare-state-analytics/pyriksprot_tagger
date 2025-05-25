@@ -28,18 +28,12 @@ $(CONFIG_FILENAME): .env
 		stanza_datadir='$(STANZA_DATADIR)' \
     )"
 
-# DATA_FOLDER=$(shell yq '.data_folder' $(CONFIG_FILENAME))
-# CORPUS_FOLDER=$(shell yq '.corpus.folder' $(CONFIG_FILENAME))
-# TARGET_FOLDER=$(shell yq '.tagged_frames.folder' $(CONFIG_FILENAME))
-# CORPUS_VERSION=$(shell yq '.corpus.version' $(CONFIG_FILENAME))
-# METADATA_VERSION=$(shell yq '.metadata.version' $(CONFIG_FILENAME))
-
 .PHONY: tag-it
 tag-it:
 	@poetry run ./pyriksprot_tagger/scripts/tag.sh \
-		--root-folder $(DATA_FOLDER) \
-		--corpus-folder $(CORPUS_FOLDER) \
-		--target-folder $(TARGET_FOLDER) \
+		--root-folder $(shell yq '.data_folder' $(CONFIG_FILENAME)) \
+		--corpus-folder $(shell yq '.corpus.folder' $(CONFIG_FILENAME)) \
+		--target-folder $(shell yq '.tagged_frames.folder' $(CONFIG_FILENAME)) \
 		--corpus-version $(CORPUS_VERSION) \
 		--metadata-version $(METADATA_VERSION) \
 		--max-procs 4
@@ -66,14 +60,13 @@ $(TEST_CONFIG_FILENAME): .env
 # 	--root-folder tests/test_data/source 
 # 	--corpus-folder tests/test_data/source/$(CORPUS_VERSION)/riksdagen-records
 
-
 tag-test-data: $(TEST_CONFIG_FILENAME)
 	@./pyriksprot_tagger/scripts/tag.sh \
 		--root-folder $(shell yq '.data_folder' $(TEST_CONFIG_FILENAME)) \
 		--corpus-folder $(shell yq '.corpus.folder' $(TEST_CONFIG_FILENAME)) \
 		--target-folder $(shell yq '.tagged_frames.folder' $(TEST_CONFIG_FILENAME)) \
-		--corpus-version $(shell yq '.corpus.version' $(TEST_CONFIG_FILENAME)) \
-		--metadata-version $(shell yq '.metadata.version' $(TEST_CONFIG_FILENAME)) \
+		--corpus-version $(CORPUS_VERSION) \
+		--metadata-version $(METADATA_VERSION) \
 		--max-procs 4
 
 vrt-test-data:
