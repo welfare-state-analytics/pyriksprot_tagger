@@ -4,7 +4,7 @@ import click
 from loguru import logger
 from pyriksprot import configuration
 from pyriksprot.workflows.tag import ITagger, TaggerProvider, tag_protocols
-from pyriksprot_tagger.utility import VersionSpecification, check_cuda
+from pyriksprot_tagger.utility import VersionSpecification
 
 
 @click.command()
@@ -44,7 +44,6 @@ def tagit(
     pattern: str | None = None,
     check_version: bool = True,
 ):
-    check_cuda()
 
     configuration.configure_context(
         source=config_filename,
@@ -79,4 +78,3 @@ if __name__ == "__main__":
         warnings.simplefilter('ignore', FutureWarning)
 
     main()  # type: ignore # pylint: disable=no-value-for-parameter
-    # tagit("sample-data/config.yml", "sample-data/v0.6.0/parlaclarin/protocols/", "sample-data/v0.6.0/tagged_frames")
