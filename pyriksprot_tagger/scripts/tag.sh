@@ -15,7 +15,7 @@ g_stanza_datadir=/data/sparv/models/stanza
 
 g_force=no
 g_update=1
-MAX_PROCS=1
+g_max_procs=1
 g_now_timestamp=$(date "+%Y%m%d_%H%M%S")
 g_scriptname=$(basename $0)
 
@@ -70,7 +70,7 @@ do
             g_target_folder="$2"; shift; shift
         ;;
         --max-procs)
-            MAX_PROCS="$2"; shift; shift
+            g_max_procs="$2"; shift; shift
         ;;
         --force)
             g_force=yes ;
@@ -136,7 +136,7 @@ function check_and_persist_config()
             --stanza-datadir $g_stanza_datadir
     fi
 
-    if [[ $MAX_PROCS < 1 || $MAX_PROCS > 6 ]]; then
+    if [[ $g_max_procs < 1 || $g_max_procs > 6 ]]; then
         echo "error: max procs must be an integer between 1 and 6" ;
         exit 64
     fi
@@ -209,7 +209,7 @@ function show_settings()
     echo "info: word frequency file:" $(yq -r '.dehyphen.tf_filename' "$config_file")
     echo ""
     echo "info: force: $g_force"
-    echo "info: using $MAX_PROCS processes"
+    echo "info: using $g_max_procs processes"
 }
 
 function tagit()
@@ -221,7 +221,7 @@ function tagit()
     local sub_folders=`find ${corpus_folder} -maxdepth 1 -mindepth 1 -name "*" -type d -printf '%f\n' | sort`
     local target_folder=$(yq -r '.tagged_frames.folder' "$config_file")
 
-    if [[ $MAX_PROCS > 1 ]]; then
+    if [[ $g_max_procs > 1 ]]; then
 
         tag_command_file="$log_dir/tag_commands_${g_now_timestamp}.txt"
 
@@ -232,8 +232,8 @@ function tagit()
             echo "poetry run python ./pyriksprot_tagger/scripts/tag.py --skip-version-check $config_file ${corpus_folder}/$sub_folder ${target_folder}/$sub_folder" >> ${tag_command_file}
             # echo "pos_tag  $config_file ${corpus_folder}/$sub_folder ${target_folder}/$sub_folder" >> ${tag_command_file}
         done
-        echo "info: running in parallel mode using $MAX_PROCS processes"
-        cat $tag_command_file | xargs -I CMD --max-procs=$MAX_PROCS bash -c CMD
+        echo "info: running in parallel mode using $g_max_procs processes"
+        cat $tag_command_file | xargs -I CMD --max-procs=$g_max_procs bash -c CMD
 
     else
         echo "info: running in sequential mode"
