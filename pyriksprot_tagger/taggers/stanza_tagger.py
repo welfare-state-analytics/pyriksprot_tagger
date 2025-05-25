@@ -119,6 +119,7 @@ class StanzaTagger(ITagger):
             use_gpu (bool, optional): If true, use GPU if exists. Defaults to True.
         """
         stanza_datadir = stanza_datadir or os.environ.get("STANZA_DATADIR")
+        utility.check_cuda()
 
         logger.info(f"stanza: processors={processors} preprocessors={preprocessors} use_gpu={use_gpu}")
         logger.info("stanza: loading models")
