@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyriksprot_tagger"
-version = "2024.6.2"
+version = "v2.0.0"
 description = "Pipeline that tags pyriksprot Parla-Clarin XML files"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [
@@ -41,8 +41,9 @@ torch = {extras = ["cuda"], version = "^2.0.1" }
 # url = "https://download.pytorch.org/whl/cu117"
 # secondary = true
 pyriksprot = {path = "../pyriksprot", develop = true}
+jinja2-cli = {extras = ["yaml"], version = "^0.8.2"}
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "==20.*,>=20.8.0.b1"
 coverage = "==5.*,>=5.4.0"
 flake8 = "==3.*,>=3.8.4"
@@ -58,8 +59,6 @@ pytest-cov = "==2.*,>=2.11.1"
 pyinstrument = "^4.0.3"
 pygit2 = "^1.7.2"
 poethepoet = "^0.13.1"
-
-[tool.poetry.group.dev.dependencies]
 debugpy = "^1.8.5"
 
 [tool.poe.tasks]
@@ -68,7 +67,7 @@ portal1_torch = """
 """
 
 [tool.poetry.scripts]
-tag_info = "pyriksprot_tagger.scripts.tag_info:main"
+pos-tag = "pyriksprot_tagger.scripts.tag:main"
 pos_tag = "pyriksprot_tagger.scripts.tag:main"
 tag_test_data = "pyriksprot_tagger.tests.scripts.tag_test_data:main"
 
