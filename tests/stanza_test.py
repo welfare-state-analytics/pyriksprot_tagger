@@ -2,7 +2,7 @@ import os
 from unittest.mock import MagicMock, patch
 
 import pyriksprot
-import pyriksprot.configuration
+from pyriksprot.configuration import ConfigValue
 import pytest
 from pyriksprot import ITagger, interface
 from pyriksprot.corpus.parlaclarin import parse
@@ -79,11 +79,11 @@ def dehyphen(text: str) -> str:
 # @pytest.mark.skip(reason="Infrastructure test (function called from Makefile)")
 def test_setup_version_test_data():
     config_filename: str = "tests/output/config.yml"
-    pyriksprot.utility.generate_default_config(target_filename=config_filename)
     pos_tag_testdata_for_current_version(
-        config_filename="tests/output/config.yml",
+        config_filename=config_filename,
         force=True,
     )
+    assert os.path.isfile(config_filename)
 
 
 def test_registered_sparv_processor_variant_is_called():
@@ -192,7 +192,7 @@ def test_stanza_tagger_with_sentenized_document():
 
 def test_stanza_tag_fake_protocol(tagger: taggers.StanzaTagger):
 
-    version: str = pyriksprot.configuration.ConfigValue("corpus.version").value
+    version: str = ConfigValue("corpus.version").value
     expected_output = ['\n'.join(['\t'.join(x[:-1]) for x in r]) for r in EXPECTED_TAGGED_RESULT_FAKE_1958]
 
     protocol: interface.Protocol = parse.ProtocolMapper.parse(jj("tests", "test_data", "fake", version, "prot-1958-fake.xml"))
